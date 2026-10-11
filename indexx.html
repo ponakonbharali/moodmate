@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MoodMate AI</title>
+
+<style>
+* { box-sizing: border-box; }
+
+:root {
+  --purple: #7857e8;
+  --light: #f2edff;
+  --bg: #f8f7fc;
+  --text: #302b45;
+  --border: #e7e2f1;
+}
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+}
+
+header {
+  background: white;
+  padding: 18px 6%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--border);
+}
+
+.logo { font-size: 23px; font-weight: bold; }
+.logo span { color: var(--purple); }
+
+main { width: 92%; max-width: 1050px; margin: 28px auto; }
+
+.hero {
+  background: linear-gradient(120deg, #7050dc, #ad91fa);
+  color: white;
+  padding: 30px;
+  border-radius: 20px;
+  margin-bottom: 22px;
+}
+
+.hero h1 { font-size: 36px; margin: 12px 0; }
+.hero p { line-height: 1.7; }
+
+.layout {
+  display: grid;
+  grid-template-columns: 1.3fr 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
+.card {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 20px;
+  margin-bottom: 20px;
+  min-width: 0;
+}
+
+h2 { font-size: 19px; margin-top: 0; }
+.small { color: #77748a; font-size: 13px; line-height: 1.6; }
+
+.moods {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 5px;
+  margin: 16px 0 24px;
+}
+
+.mood {
+  border: 1px solid var(--border);
+  background: white;
+  padding: 10px 2px;
+  border-radius: 10px;
+  font-size: 11px;
+}
+
+.mood span { display: block; font-size: 22px; margin-bottom: 5px; }
+
+.mood.active {
+  background: var(--light);
+  border-color: var(--purple);
+}
+
+.chat {
+  height: 320px;
+  overflow-y: auto;
+  padding: 12px;
+  border: 1px solid var(--border);
+  background: #faf9fe;
+  border-radius: 13px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.message {
+  max-width: 90%;
+  padding: 11px 13px;
+  border-radius: 13px;
+  font-size: 14px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.bot {
+  background: white;
+  border: 1px solid var(--border);
+  align-self: flex-start;
+}
+
+.user {
+  background: var(--purple);
+  color: white;
+  align-self: flex-end;
+}
+
+form { display: flex; gap: 8px; margin-top: 12px; }
+
+input:not([type="checkbox"]) {
+  width: 100%;
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  outline: none;
+}
+
+input:focus { border-color: var(--purple); }
+
+button { cursor: pointer; font: inherit; }
+
+.primary {
+  background: var(--purple);
+  color: white;
+  border: none;
+  padding: 11px 15px;
+  border-radius: 10px;
+}
+
+.secondary {
+  background: white;
+  color: var(--purple);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  padding: 8px 10px;
+  font-size: 12px;
+  margin-top: 8px;
+}
+
+.summary {
+  padding: 16px;
+  background: var(--light);
+  border-radius: 12px;
+  margin: 16px 0;
+}
+
+.summary strong { font-size: 26px; }
+
+.summary-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.progress {
+  height: 8px;
+  background: #dcd3fa;
+  border-radius: 10px;
+  margin-top: 10px;
+  overflow: hidden;
+}
+
+.bar {
+  height: 100%;
+  width: 0;
+  background: var(--purple);
+}
+
+.goals { padding: 0; list-style: none; }
+
+.goal {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  margin: 8px 0;
+}
+
+.goal label { flex: 1; font-size: 13px; overflow-wrap: anywhere; }
+.goal.done label { text-decoration: line-through; color: #888; }
+.goal input { accent-color: var(--purple); }
+
+.delete {
+  background: none;
+  border: none;
+  color: #a19bb2;
+  font-size: 20px;
+}
+
+.quote {
+  background: #fff5dc;
+  padding: 18px;
+  border-radius: 14px;
+  line-height: 1.7;
+  font-size: 14px;
+}
+
+footer {
+  text-align: center;
+  padding: 22px;
+  color: #77748a;
+  font-size: 12px;
+}
+
+@media(max-width: 700px) {
+  .layout { grid-template-columns: 1fr; }
+  .hero h1 { font-size: 29px; }
+  .card { padding: 15px; }
+}
+</style>
+</head>
+
+<body>
+<header>
+  <div class="logo">✦ <span>MoodMate</span></div>
+  <div class="small">● Your daily companion</div>
+</header>
+
+<main>
+  <section class="hero">
+    <small>YOUR PERSONAL MOTIVATION SPACE</small>
+    <h1>A little progress is still progress. ✨</h1>
+    <p>Share your feelings, find motivation, and turn small steps into meaningful progress.</p>
+  </section>
+
+  <div class="layout">
+    <section class="card">
+      <h2>How are you feeling?</h2>
+      <p class="small">Choose your current mood.</p>
+
+      <div class="moods" id="moods">
+        <button type="button" class="mood" data-mood="happy"><span>😊</span>Happy</button>
+        <button type="button" class="mood" data-mood="sad"><span>😔</span>Sad</button>
+        <button type="button" class="mood active" data-mood="stressed"><span>😰</span>Stressed</button>
+        <button type="button" class="mood" data-mood="tired"><span>😴</span>Tired</button>
+        <button type="button" class="mood" data-mood="motivated"><span>🔥</span>Ready</button>
+      </div>
+
+      <h2>Chat with MoodMate 💬</h2>
+      <p class="small">Tell me what's on your mind.</p>
+
+      <div class="chat" id="chat" aria-live="polite"></div>
+
+      <button type="button" class="secondary" data-prompt="I have an exam tomorrow">📚 Exam stress</button>
+      <button type="button" class="secondary" data-prompt="I need motivation">🔥 Motivation</button>
+
+      <form id="chatForm">
+        <input id="messageInput" placeholder="Type your message..." maxlength="500" required autocomplete="off">
+        <button class="primary" type="submit">Send</button>
+      </form>
+
+      <button type="button" id="clearChat" class="secondary">Clear chat</button>
+    </section>
+
+    <aside>
+      <section class="card">
+        <h2>Today's Goals 🎯</h2>
+        <p class="small">One small step at a time.</p>
+
+        <div class="summary">
+          <div class="summary-top">
+            <strong id="percent">0%</strong>
+            <span class="small" id="count">0 of 0 completed</span>
+          </div>
+          <div class="progress"><div class="bar" id="bar"></div></div>
+        </div>
+
+        <form id="goalForm">
+          <input id="goalInput" placeholder="Add a new goal..." maxlength="120" required>
+          <button class="primary" type="submit">+</button>
+        </form>
+
+        <ul class="goals" id="goals"></ul>
+        <p class="small">Your goals are saved in this browser.</p>
+      </section>
+
+      <section class="quote">
+        <strong>🌻 Daily reminder</strong><br>
+        You don't have to be perfect. Just keep moving forward, one small step at a time.
+      </section>
+    </aside>
+  </div>
+</main>
+
+<footer>
+  Made with 💜 for brighter days.<br>
+  MoodMate is a rule-based chatbot and does not replace professional support.
+</footer>
+
+<script>
+"use strict";
+
+const $ = id => document.getElementById(id);
+
+const STORAGE = {
+  chat: "moodmate-chat",
+  mood: "moodmate-mood",
+  goals: "moodmate-goals"
+};
+
+const moodReplies = {
+  happy: "That's wonderful! ☀️ Celebrate this moment. What is one thing you'd like to achieve today?",
+  sad: "I'm sorry things feel difficult. 💜 Be kind to yourself, take a gentle break, or reach out to someone you trust.",
+  stressed: "Let's slow down. 🌿 Take three comfortable breaths and focus on one thing you can control. What is worrying you most?",
+  tired: "Rest is productive too. 🌙 Take a break, drink some water, and choose one manageable task when you're ready.",
+  motivated: "That's the spirit! 🔥 Pick one goal and work on it for five minutes. Starting is already progress."
+};
+
+const rules = [
+  {
+    words: ["kill myself", "end my life", "suicidal", "self-harm", "hurt myself"],
+    reply: "I'm sorry you're going through this. Your safety matters. Please reach out to someone you trust now. If you might act on these thoughts, contact local emergency services or go to the nearest emergency department."
+  },
+  {
+    words: ["hello", "hey", "hi ", "good morning", "good evening"],
+    reply: "Hey there! 😊 Welcome to MoodMate. How are you feeling today, and what would you like help with?"
+  },
+  {
+    words: ["exam", "study", "studying", "homework", "assignment", "school", "college"],
+    reply: "📚 Let's make studying manageable! Pick one topic, remove distractions, and focus for 15 minutes. What subject are you working on?"
+  },
+  {
+    words: ["stress", "stressed", "anxious", "anxiety", "overwhelmed", "worried"],
+    reply: "🌿 Pause and take three slow, comfortable breaths. Write down what's worrying you and choose one small thing you can control today."
+  },
+  {
+    words: ["sad", "lonely", "unhappy", "upset", "crying"],
+    reply: "💜 It's okay not to feel okay. Consider talking to someone you trust or taking a gentle break. Would you like to tell me more?"
+  },
+  {
+    words: ["tired", "exhausted", "sleepy", "burnout"],
+    reply: "🌙 You deserve rest without guilt. Take a short break if you can. What is one task you could simplify today?"
+  },
+  {
+    words: ["lazy", "procrastinating", "procrastination", "can't start", "cannot start"],
+    reply: "🌱 Try the two-minute rule: work on your task for just two minutes. Your only job is to begin. What have you been putting off?"
+  },
+  {
+    words: ["fail", "failure", "failed", "mistake"],
+    reply: "💜 A setback doesn't define you. Every attempt can teach you something. Identify one lesson and choose your next small step."
+  },
+  {
+    words: ["job", "career", "interview", "future"],
+    reply: "🚀 Build your future one action at a time. Spend 15 minutes learning a skill or exploring an opportunity. What career goal matters to you?"
+  },
+  {
+    words: ["motivation", "motivate", "unmotivated", "inspire"],
+    reply: "🔥 You don't have to feel ready to start. Choose one small task and work for five minutes. What's your first step?"
+  },
+  {
+    words: ["goal", "goals", "habit", "discipline", "productive"],
+    reply: "🎯 Make your goal specific and achievable. Choose one small action you can complete today, and add it to your goal tracker."
+  },
+  {
+    words: ["thank", "thanks"],
+    reply: "You're welcome! 💜 Celebrate your small wins. Is there anything else you'd like help with?"
+  },
+  {
+    words: ["happy", "excited", "awesome", "great"],
+    reply: "☀️ I'm glad to hear that! Enjoy the positive moment. What would you like to accomplish next?"
+  }
+];
+
+function loadData(key, fallback) {
+  try {
+    const value = localStorage.getItem(key);
+    return value === null ? fallback : JSON.parse(value);
+  } catch {
+    return fallback;
+  }
+}
+
+function saveData(key, value) {
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+  } catch (error) {
+    console.warn("Could not save data:", error);
+  }
+}
+
+let currentMood = loadData(STORAGE.mood, "stressed");
+if (!Object.hasOwn(moodReplies, currentMood)) currentMood = "stressed";
+
+function getReply(message) {
+  const text = " " + message.toLowerCase().replace(/[^\w\s'-]/g, " ") + " ";
+
+  for (const rule of rules) {
+    if (rule.words.some(word => text.includes(word))) {
+      return rule.reply;
+    }
+  }
+
+  return moodReplies[currentMood] +
+    "\n\nTell me a little more about what's happening, and let's find one small next step together.";
+}
+
+let chatHistory = loadData(STORAGE.chat, []);
+if (!Array.isArray(chatHistory)) chatHistory = [];
+
+chatHistory = chatHistory.filter(item =>
+  item &&
+  typeof item.text === "string" &&
+  ["user", "bot"].includes(item.sender)
+).slice(-80);
+
+function renderMessage(text, sender) {
+  const bubble = document.createElement("div");
+  bubble.className = "message " + sender;
+  bubble.textContent = text;
+  $("chat").appendChild(bubble);
+}
+
+function addMessage(text, sender) {
+  renderMessage(text, sender);
+  chatHistory.push({ text, sender });
+  chatHistory = chatHistory.slice(-80);
+  saveData(STORAGE.chat, chatHistory);
+  $("chat").scrollTop = $("chat").scrollHeight;
+}
+
+function renderChat() {
+  $("chat").replaceChildren();
+
+  if (chatHistory.length === 0) {
+    renderMessage(
+      "Hey there! 🌷 I'm MoodMate, your motivation companion.\n\nTell me what's on your mind. We'll take it one small step at a time.",
+      "bot"
+    );
+  } else {
+    chatHistory.forEach(item => renderMessage(item.text, item.sender));
+  }
+
+  $("chat").scrollTop = $("chat").scrollHeight;
+}
+
+function updateMoodButtons() {
+  document.querySelectorAll(".mood").forEach(button => {
+    button.classList.toggle("active", button.dataset.mood === currentMood);
+  });
+}
+
+$("moods").addEventListener("click", event => {
+  const button = event.target.closest("[data-mood]");
+  if (!button) return;
+
+  currentMood = button.dataset.mood;
+  saveData(STORAGE.mood, currentMood);
+  updateMoodButtons();
+
+  addMessage("I'm feeling " + currentMood + ".", "user");
+  addMessage(moodReplies[currentMood], "bot");
+});
+
+$("chatForm").addEventListener("submit", event => {
+  event.preventDefault();
+
+  const input = $("messageInput");
+  const message = input.value.trim();
+
+  if (!message) return;
+
+  addMessage(message, "user");
+  input.value = "";
+
+  try {
+    addMessage(getReply(message), "bot");
+  } catch (error) {
+    console.error(error);
+    addMessage("Sorry, something went wrong. Please try sending your message again.", "bot");
+  }
+
+  input.focus();
+});
+
+document.querySelectorAll("[data-prompt]").forEach(button => {
+  button.addEventListener("click", () => {
+    $("messageInput").value = button.dataset.prompt;
+    $("chatForm").requestSubmit();
+  });
+});
+
+$("clearChat").addEventListener("click", () => {
+  chatHistory = [];
+  saveData(STORAGE.chat, chatHistory);
+  renderChat();
+});
+
+let goals = loadData(STORAGE.goals, []);
+if (!Array.isArray(goals)) goals = [];
+
+goals = goals.filter(goal =>
+  goal &&
+  typeof goal.id === "string" &&
+  typeof goal.text === "string" &&
+  typeof goal.done === "boolean"
+).slice(0, 100);
+
+function renderGoals() {
+  const list = $("goals");
+  list.replaceChildren();
+
+  const completed = goals.filter(goal => goal.done).length;
+  const percent = goals.length
+    ? Math.round(completed / goals.length * 100)
+    : 0;
+
+  $("percent").textContent = percent + "%";
+  $("count").textContent = completed + " of " + goals.length + " completed";
+  $("bar").style.width = percent + "%";
+
+  if (!goals.length) {
+    const empty = document.createElement("li");
+    empty.className = "small";
+    empty.textContent = "No goals yet. Add your first little win! 🌱";
+    list.appendChild(empty);
+    return;
+  }
+
+  goals.forEach(goal => {
+    const li = document.createElement("li");
+    li.className = "goal" + (goal.done ? " done" : "");
+
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.checked = goal.done;
+    checkbox.setAttribute("aria-label", "Complete " + goal.text);
+
+    checkbox.addEventListener("change", () => {
+      goal.done = checkbox.checked;
+      saveData(STORAGE.goals, goals);
+      renderGoals();
+    });
+
+    const label = document.createElement("label");
+    label.textContent = goal.text;
+    label.addEventListener("click", () => {
+      checkbox.checked = !checkbox.checked;
+      checkbox.dispatchEvent(new Event("change"));
+    });
+
+    const remove = document.createElement("button");
+    remove.type = "button";
+    remove.className = "delete";
+    remove.textContent = "×";
+    remove.setAttribute("aria-label", "Delete " + goal.text);
+
+    remove.addEventListener("click", () => {
+      goals = goals.filter(item => item.id !== goal.id);
+      saveData(STORAGE.goals, goals);
+      renderGoals();
+    });
+
+    li.append(checkbox, label, remove);
+    list.appendChild(li);
+  });
+}
+
+$("goalForm").addEventListener("submit", event => {
+  event.preventDefault();
+
+  const input = $("goalInput");
+  const text = input.value.trim();
+
+  if (!text || goals.length >= 100) return;
+
+  goals.push({
+    id: Date.now().toString() + Math.random().toString(36).slice(2),
+    text,
+    done: false
+  });
+
+  saveData(STORAGE.goals, goals);
+  renderGoals();
+
+  input.value = "";
+  input.focus();
+});
+
+updateMoodButtons();
+renderChat();
+renderGoals();
+</script>
+</body>
+</html>
