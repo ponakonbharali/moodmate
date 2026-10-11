@@ -290,7 +290,7 @@
     async function askGemini(userText) {
       if (
         !WORKER_URL.startsWith("https://") ||
-        WORKER_URL.includes("PASTE_YOUR_CLOUDFLARE")
+        WORKER_URL.includes("ponakonbharali4.workers.dev")
       ) {
         throw new Error(
           "Please add your actual Cloudflare Worker URL in the HTML code."
